@@ -1,46 +1,49 @@
-import { useState } from 'react';
+import {
+	setNewId,
+	editTodo,
+	editTodoOnChange,
+	changeOpenModalFlag,
+	editTodoError,
+} from '../actions/';
+import {
+	selectCurrentId,
+	selectEditedTodo,
+	selectEditedTodoError,
+	selectOpenModalFlag,
+} from '../selectors/';
+import { useSelector } from 'react-redux';
 
-export const useEditedTodo = (refreshTodos, setRefreshTodos, currentId, setCurrentId) => {
-	const [editedTodo, setEditedTodo] = useState();
-	const [openModal, setOpenModal] = useState(false);
-	const [editedTodoError, setEditedTodoError] = useState(true);
+export const useEditedTodo = (refreshTodosFlag, dispatch) => {
+	const currentId = useSelector(selectCurrentId);
+	const editedTodo = useSelector(selectEditedTodo);
+	const editedTodoError = useSelector(selectEditedTodoError);
+	const openModalFlag = useSelector(selectOpenModalFlag);
 
 	const onClickOpenToEditTodo = (id) => {
-		setCurrentId(id);
-		setOpenModal(true);
+		dispatch(setNewId(id));
+		dispatch(changeOpenModalFlag(true));
 	};
 
 	const onChangeEditedTodo = ({ target }) => {
-		setEditedTodo(target.value);
+		dispatch(editTodoOnChange(target.value));
 		if (target.value.length === 0) {
-			setEditedTodoError('Новое название не должно быть пустым.');
+			dispatch(editTodoError('Новое название не должно быть пустым.'));
 		} else {
-			setEditedTodoError(false);
+			dispatch(editTodoError(false));
 		}
 	};
 
 	const onSubmitEditedTodo = (event) => {
 		event.preventDefault();
-		fetch(`http://localhost:3005/todos/${currentId}`, {
-			method: 'PUT',
-			headers: { 'Content-Type': 'application/json;charset=utf-8' },
-			body: JSON.stringify({
-				title: editedTodo,
-			}),
-		})
-			.then((rawResponse) => rawResponse.json())
-			.then((response) => {
-				console.log('Todo edited:', response);
-				setRefreshTodos(!refreshTodos);
-			})
-			.finally(() => setOpenModal(false));
+		dispatch(editTodo(currentId, editedTodo, refreshTodosFlag));
 	};
 
 	return {
+		editedTodo,
 		onClickOpenToEditTodo,
 		onChangeEditedTodo,
 		onSubmitEditedTodo,
-		openModal,
+		openModalFlag,
 		editedTodoError,
 	};
 };

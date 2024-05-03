@@ -1,25 +1,11 @@
-import { useEffect } from 'react';
-import { useState } from 'react';
-import { sortByTitle } from '../utils/sortByTitle';
-import { AppContext } from '../context';
-import { useContext } from 'react';
+import { useSelector } from 'react-redux';
+import { selectTodos } from '../selectors/loadTodosSelectors';
+import { setTodos } from '../actions';
 
-export const useLoadTodos = () => {
-	const [todos, setTodos] = useState([]);
-	const { refreshTodos, isSort } = useContext(AppContext);
+export const useLoadTodos = (refreshTodosFlag, isSortFlag, dispatch) => {
+	const todos = useSelector(selectTodos);
 
-	useEffect(() => {
-		fetch('http://localhost:3005/todos')
-			.then((loadedData) => loadedData.json())
-			.then((loadedTodos) => {
-				if (isSort) {
-					const sortedTodos = loadedTodos.sort(sortByTitle);
-					setTodos(sortedTodos);
-				} else {
-					setTodos(loadedTodos);
-				}
-			});
-	}, [refreshTodos, isSort]);
+	dispatch(setTodos(refreshTodosFlag, isSortFlag));
 
 	return todos;
 };

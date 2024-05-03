@@ -1,18 +1,24 @@
 import styles from './app.module.css';
-import { useState } from 'react';
 import { useNewTodo, useEditedTodo, useSearchTodo } from './hooks/index';
 import { Todos } from './components/Todos/Todos';
 import { AppContext } from './context';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+	selectIsSortFlag,
+	selectRefreshTodosFlag,
+	selectSearchedTodo,
+} from './selectors/appSelectors';
+import { changeSortFlag } from './actions/appActions';
 
 const App = () => {
-	const [currentId, setCurrentId] = useState();
-	const [refreshTodos, setRefreshTodos] = useState(false);
-	const [searchTodo, setSearchTodo] = useState(null);
-	const [isSort, setIsSort] = useState(false);
+	const dispatch = useDispatch();
+	const refreshTodosFlag = useSelector(selectRefreshTodosFlag);
+	const searchedTodo = useSelector(selectSearchedTodo);
+	const isSortFlag = useSelector(selectIsSortFlag);
 
 	const { newTodo, onChangeNewTodo, onSubmitNewTodo } = useNewTodo(
-		refreshTodos,
-		setRefreshTodos,
+		refreshTodosFlag,
+		dispatch,
 	);
 
 	const {
@@ -20,25 +26,20 @@ const App = () => {
 		onClickOpenToEditTodo,
 		onChangeEditedTodo,
 		onSubmitEditedTodo,
-		openModal,
+		openModalFlag,
 		editedTodoError,
-	} = useEditedTodo(refreshTodos, setRefreshTodos, currentId, setCurrentId);
+	} = useEditedTodo(refreshTodosFlag, dispatch);
 
-	const onChangeSearchTodo = useSearchTodo(setSearchTodo);
+	const onChangeSearchTodo = useSearchTodo(dispatch);
 
 	const contextData = {
-		refreshTodos,
-		isSort,
-		setCurrentId,
-		setRefreshTodos,
-		searchTodo,
 		onClickOpenToEditTodo,
 	};
 
 	return (
 		<main className={styles.todos}>
 			<div
-				className={`${styles.todosContainer} ${openModal ? styles.blured : null}`}
+				className={`${styles.todosContainer} ${openModalFlag ? styles.blured : null}`}
 			>
 				<div className={styles.todosControls}>
 					<form onSubmit={onSubmitNewTodo}>
@@ -47,20 +48,25 @@ const App = () => {
 					</form>
 					<input
 						onChange={onChangeSearchTodo}
-						value={searchTodo}
+						value={searchedTodo}
 						placeholder="Search todo"
 					></input>
-					<button onClick={() => setIsSort(!isSort)}>
-						{isSort ? 'Unsort' : 'Sort'}
+					<button onClick={() => dispatch(changeSortFlag(isSortFlag))}>
+						{isSortFlag ? 'Unsort' : 'Sort'}
 					</button>
 				</div>
 				<AppContext.Provider value={contextData}>
-					<Todos></Todos>
+					<Todos
+						dispatch={dispatch}
+						refreshTodosFlag={refreshTodosFlag}
+						searchedTodo={searchedTodo}
+						isSortFlag={isSortFlag}
+					></Todos>
 				</AppContext.Provider>
 			</div>
 			<form
 				onSubmit={onSubmitEditedTodo}
-				className={`${styles.editTodoForm} ${openModal ? styles.active : null}`}
+				className={`${styles.editTodoForm} ${openModalFlag ? styles.active : null}`}
 			>
 				{editedTodoError && <div className={styles.error}>{editedTodoError}</div>}
 				<input onChange={onChangeEditedTodo} value={editedTodo}></input>

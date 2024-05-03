@@ -1,26 +1,17 @@
-import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { selectNewTodo } from '../selectors/newTodoSelectors';
+import { addNewTodo, newTodoOnChange } from '../actions';
 
-export const useNewTodo = (refreshTodos, setRefreshTodos) => {
-	const [newTodo, setNewTodo] = useState();
+export const useNewTodo = (refreshTodosFlag, dispatch) => {
+	const newTodo = useSelector(selectNewTodo);
 
 	const onChangeNewTodo = ({ target }) => {
-		setNewTodo(target.value);
+		dispatch(newTodoOnChange(target.value));
 	};
 
 	const onSubmitNewTodo = (event) => {
 		event.preventDefault();
-		fetch('http://localhost:3005/todos', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json;charset=utf-8' },
-			body: JSON.stringify({
-				title: newTodo,
-			}),
-		})
-			.then((rawResponse) => rawResponse.json())
-			.then((response) => {
-				console.log('Todo added:', response);
-				setRefreshTodos(!refreshTodos);
-			});
+		dispatch(addNewTodo(newTodo, refreshTodosFlag));
 	};
 
 	return { newTodo, onChangeNewTodo, onSubmitNewTodo };

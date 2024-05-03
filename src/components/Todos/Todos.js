@@ -3,17 +3,17 @@ import styles from '../../app.module.css';
 import { AppContext } from '../../context';
 import { useContext } from 'react';
 
-export const Todos = () => {
-	const { searchTodo, onClickOpenToEditTodo } = useContext(AppContext);
-	const todos = useLoadTodos();
-	const onClickDeleteTodo = useDeleteTodo();
+export const Todos = ({ dispatch, refreshTodosFlag, searchedTodo, isSortFlag }) => {
+	const { onClickOpenToEditTodo } = useContext(AppContext);
+	const todos = useLoadTodos(refreshTodosFlag, isSortFlag, dispatch);
+	const onClickDeleteTodo = useDeleteTodo(dispatch);
 	return (
 		<>
 			{todos.length ? (
 				todos.map(({ id, title }) => (
 					<div
 						key={id}
-						className={`${styles.todo} ${searchTodo && !title.includes(searchTodo) ? styles.hide : styles.show}`}
+						className={`${styles.todo} ${searchedTodo && !title.includes(searchedTodo) ? styles.hide : styles.show}`}
 					>
 						{title}
 						<div>

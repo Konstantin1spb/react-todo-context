@@ -1,6 +1,8 @@
-export const useSearchTodo = (setSearchTodo) => {
+import { searchTodo } from '../actions/appActions';
+
+export const useSearchTodo = (dispatch) => {
 	const onChangeSearchTodo = ({ target }) => {
-		setSearchTodo(target.value);
+		dispatch(searchTodo(target.value));
 	};
 
 	return onChangeSearchTodo;
